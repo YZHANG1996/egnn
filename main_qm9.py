@@ -140,7 +140,7 @@ if __name__ == "__main__":
                             'best_val': val_loss,
                             'best_test': test_loss,
                             'scheduler_state_dict': lr_scheduler.state_dict()
-                            }, args.outf + "/" + args.exp_name + "best_model")                
+                            }, args.outf + "/" + args.exp_name + "/best_model")                
 
             print("Val loss: %.4f \t test loss: %.4f \t epoch %d" % (val_loss, test_loss, epoch))
             print("Best: val loss: %.4f \t test loss: %.4f \t epoch %d" % (res['best_val'], res['best_test'], res['best_epoch']))
