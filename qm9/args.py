@@ -104,7 +104,7 @@ def setup_shared_args(parser):
     parser.add_argument('--predictdir', type=str, default='predict/',
                         help='Directory to place log and savefiles. (default: predict/)')
     # Directory to read and save data from
-    parser.add_argument('--datadir', type=str, default='qm9/temp',
+    parser.add_argument('--datadir', type=str, default='/repo/qm9/temp',
                         help='Directory to look up data from. (default: data/)')
 
     # Dataset options

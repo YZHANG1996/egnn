@@ -17,7 +17,7 @@ def download_dataset_qm9(datadir, dataname, splits=None, calculate_thermo=True, 
     Download and prepare the QM9 (GDB9) dataset.
     """
     # Define directory for which data will be output.
-    gdb9dir = "/repo/" + join(*[datadir, dataname])
+    gdb9dir = join(*[datadir, dataname])
     print ("debug", gdb9dir)
     # os.system("ls")
     # os.system("pwd")
