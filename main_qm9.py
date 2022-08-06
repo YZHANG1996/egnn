@@ -117,6 +117,7 @@ def train(epoch, loader, partition='train'):
 
 
 if __name__ == "__main__":
+    print ("start")
     res = {'epochs': [], 'losess': [], 'best_val': 1e10, 'best_test': 1e10, 'best_epoch': 0}
 
     for epoch in range(0, args.epochs):
