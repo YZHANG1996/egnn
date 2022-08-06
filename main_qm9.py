@@ -132,6 +132,16 @@ if __name__ == "__main__":
                 res['best_val'] = val_loss
                 res['best_test'] = test_loss
                 res['best_epoch'] = epoch
+
+                torch.save({
+                            'epoch': epoch,
+                            'model_state_dict': model.state_dict(),
+                            'optimizer_state_dict': optimizer.state_dict(),
+                            'best_val': val_loss,
+                            'best_test': test_loss,
+                            'scheduler_state_dict': lr_scheduler.state_dict()
+                            }, "best_model")                
+
             print("Val loss: %.4f \t test loss: %.4f \t epoch %d" % (val_loss, test_loss, epoch))
             print("Best: val loss: %.4f \t test loss: %.4f \t epoch %d" % (res['best_val'], res['best_test'], res['best_epoch']))
 
