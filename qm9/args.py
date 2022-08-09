@@ -183,6 +183,10 @@ def setup_shared_args(parser):
                         help='Concatenate the scalars from different \ell in the dot-product-matrix part of the edge network.')
     parser.add_argument('--target', type=str, default='',
                         help='Learning target for a dataset (such as qm9) with multiple options.')
+    parser.add_argument('--load', action=BoolArg, default=False,
+                    help='Load from previous checkpoint. (default: False)')
+    parser.add_argument('--noopt_geom', action=BoolArg, default=False,
+                    help='Learn the relationship between unoptimized geometry and property')
 
     return parser
 

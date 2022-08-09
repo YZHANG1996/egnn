@@ -55,7 +55,7 @@ def initialize_datasets(args, datadir, dataset, subset=None, splits=None,
 
     # Download and process dataset. Returns datafiles.
     datafiles = prepare_dataset(
-        datadir, dataset, subset, splits, force_download=force_download)
+        datadir, dataset, subset, splits, force_download=force_download, noopt_geom=args.noopt_geom)
 
     # Load downloaded/processed datasets
     datasets = {}

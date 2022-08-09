@@ -4,6 +4,11 @@ import torch
 import tarfile
 from torch.nn.utils.rnn import pad_sequence
 
+import rdkit
+from rdkit import Chem
+from rdkit.Chem import AllChem
+
+
 charge_dict = {'H': 1, 'C': 6, 'N': 7, 'O': 8, 'F': 9}
 
 
@@ -33,7 +38,7 @@ def split_dataset(data, split_idxs):
 # def save_database()
 
 
-def process_xyz_files(data, process_file_fn, file_ext=None, file_idx_list=None, stack=True):
+def process_xyz_files(data, process_file_fn, file_ext=None, file_idx_list=None, stack=True, noopt_geom=False):
     """
     Take a set of datafiles and apply a predefined data processing script to each
     one. Data can be stored in a directory, tarfile, or zipfile. An optional
@@ -87,7 +92,7 @@ def process_xyz_files(data, process_file_fn, file_ext=None, file_idx_list=None, 
 
     for file in files:
         with readfile(file) as openfile:
-            molecules.append(process_file_fn(openfile))
+            molecules.append(process_file_fn(openfile, noopt_geom))
 
     # Check that all molecules have the same set of items in their dictionary:
     props = molecules[0].keys()
@@ -103,7 +108,7 @@ def process_xyz_files(data, process_file_fn, file_ext=None, file_idx_list=None, 
     return molecules
 
 
-def process_xyz_md17(datafile):
+def process_xyz_md17(datafile, noopt_geom=False):
     """
     Read xyz file and return a molecular dict with number of atoms, energy, forces, coordinates and atom-type for the MD-17 dataset.
 
@@ -158,7 +163,29 @@ def process_xyz_md17(datafile):
     return molecule
 
 
-def process_xyz_gdb9(datafile):
+def use_rdkit_geom(index, smi, num_atoms):
+
+    mol = Chem.MolFromSmiles(smi)
+    mol3 = Chem.AddHs(mol)
+    AllChem.EmbedMolecule(mol3, randomSeed=0xf00d)
+    mol_sdf = Chem.MolToMolBlock(mol3)
+    temp_sdf = mol_sdf[mol_sdf.find('V2000'):].split("\n")[1:]
+
+    assert len(temp_sdf[num_atoms].split()) == 4
+
+    atom_charges, atom_positions = [], []
+    for i in range(num_atoms):
+        line = temp_sdf[i].split()
+        posx, posy, posz, atom_type = line[0], line[1], line[2], line[3]
+        atom_charges.append(charge_dict[atom_type])
+        atom_positions.append([float(posx), float(posy), float(posz)]) 
+    
+    # print (index)
+
+    return atom_charges, atom_positions 
+
+
+def process_xyz_gdb9(datafile, noopt_geom=False):
     """
     Read xyz file and return a molecular dict with number of atoms, energy, forces, coordinates and atom-type for the gdb9 dataset.
 
@@ -183,17 +210,21 @@ def process_xyz_gdb9(datafile):
     mol_xyz = xyz_lines[2:num_atoms+2]
     mol_freq = xyz_lines[num_atoms+2]
 
-    atom_charges, atom_positions = [], []
-    for line in mol_xyz:
-        atom, posx, posy, posz, _ = line.replace('*^', 'e').split()
-        atom_charges.append(charge_dict[atom])
-        atom_positions.append([float(posx), float(posy), float(posz)])
-
     prop_strings = ['tag', 'index', 'A', 'B', 'C', 'mu', 'alpha', 'homo', 'lumo', 'gap', 'r2', 'zpve', 'U0', 'U', 'H', 'G', 'Cv']
     prop_strings = prop_strings[1:]
     mol_props = [int(mol_props[1])] + [float(x) for x in mol_props[2:]]
     mol_props = dict(zip(prop_strings, mol_props))
     mol_props['omega1'] = max(float(omega) for omega in mol_freq.split())
+
+    if not noopt_geom:
+        atom_charges, atom_positions = [], []
+        for line in mol_xyz:
+            atom, posx, posy, posz, _ = line.replace('*^', 'e').split()
+            atom_charges.append(charge_dict[atom])
+            atom_positions.append([float(posx), float(posy), float(posz)])
+    else:
+        mol_smiles = xyz_lines[-2].split()[0] 
+        atom_charges, atom_positions = use_rdkit_geom(mol_props['index'], mol_smiles, num_atoms)
 
     molecule = {'num_atoms': num_atoms, 'charges': atom_charges, 'positions': atom_positions}
     molecule.update(mol_props)

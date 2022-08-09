@@ -12,7 +12,7 @@ from qm9.data.prepare.process import process_xyz_files, process_xyz_gdb9
 from qm9.data.prepare.utils import download_data, is_int, cleanup_file
 
 
-def download_dataset_qm9(datadir, dataname, splits=None, calculate_thermo=True, exclude=True, cleanup=True):
+def download_dataset_qm9(datadir, dataname, splits=None, calculate_thermo=True, exclude=True, cleanup=True, noopt_geom=False):
     """
     Download and prepare the QM9 (GDB9) dataset.
     """
@@ -50,7 +50,7 @@ def download_dataset_qm9(datadir, dataname, splits=None, calculate_thermo=True, 
     gdb9_data = {}
     for split, split_idx in splits.items():
         gdb9_data[split] = process_xyz_files(
-            gdb9_tar_data, process_xyz_gdb9, file_idx_list=split_idx, stack=True)
+            gdb9_tar_data, process_xyz_gdb9, file_idx_list=split_idx, stack=True, noopt_geom=noopt_geom)
 
     # Subtract thermochemical energy if desired.
     if calculate_thermo:

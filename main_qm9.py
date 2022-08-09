@@ -8,12 +8,14 @@ from qm9 import utils as qm9_utils
 import utils
 import json
 
+from qm9.args import BoolArg
+
 from torch.utils.tensorboard import SummaryWriter
 
 parser = argparse.ArgumentParser(description='QM9 Example')
 parser.add_argument('--exp_name', type=str, default='exp_1', metavar='N',
                     help='experiment_name')
-parser.add_argument('--batch_size', type=int, default=96, metavar='N',
+parser.add_argument('--batch_size', type=int, default=64, metavar='N',
                     help='input batch size for training (default: 128)')
 parser.add_argument('--epochs', type=int, default=1000, metavar='N',
                     help='number of epochs to train (default: 10)')
@@ -48,8 +50,11 @@ parser.add_argument('--node_attr', type=int, default=0, metavar='N',
                     help='node_attr or not')
 parser.add_argument('--weight_decay', type=float, default=1e-16, metavar='N',
                     help='weight decay')
-parser.add_argument('--load', action=Boolean, default=False,
+parser.add_argument('--load', action=BoolArg, default=False,
                     help='Load from previous checkpoint. (default: False)')
+parser.add_argument('--noopt_geom', action=BoolArg, default=False,
+                    help='Learn the relationship between unoptimized geometry and property')
+
 
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
