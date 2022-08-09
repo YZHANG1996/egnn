@@ -212,6 +212,8 @@ def setup_argparse(dataset):
     elif dataset == "qm9":
         parser.add_argument('--subtract-thermo', action=BoolArg, default=True,
                             help='Subtract thermochemical energy from relvant learning targets in QM9 dataset.')
+        parser.add_argument('--noopt_geom', action=BoolArg, default=False,
+                    help='Learn the relationship between unoptimized geometry and property')
     else:
         raise ValueError("Dataset is not recognized")
     return parser

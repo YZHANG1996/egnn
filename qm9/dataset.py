@@ -9,7 +9,8 @@ def retrieve_dataloaders(batch_size, num_workers=1):
     args = init_argparse('qm9')
     args, datasets, num_species, charge_scale = initialize_datasets(args, args.datadir, 'qm9',
                                                                     subtract_thermo=args.subtract_thermo,
-                                                                    force_download=args.force_download
+                                                                    force_download=args.force_download,
+                                                                    noopt_geom=args.noopt_geom
                                                                     )
     qm9_to_eV = {'U0': 27.2114, 'U': 27.2114, 'G': 27.2114, 'H': 27.2114, 'zpve': 27211.4, 'gap': 27.2114, 'homo': 27.2114,
                  'lumo': 27.2114}

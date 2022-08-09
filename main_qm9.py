@@ -52,8 +52,6 @@ parser.add_argument('--weight_decay', type=float, default=1e-16, metavar='N',
                     help='weight decay')
 parser.add_argument('--load', action=BoolArg, default=False,
                     help='Load from previous checkpoint. (default: False)')
-parser.add_argument('--noopt_geom', action=BoolArg, default=False,
-                    help='Learn the relationship between unoptimized geometry and property')
 
 
 args = parser.parse_args()

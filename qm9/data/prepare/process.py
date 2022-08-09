@@ -108,7 +108,7 @@ def process_xyz_files(data, process_file_fn, file_ext=None, file_idx_list=None, 
     return molecules
 
 
-def process_xyz_md17(datafile, noopt_geom=False):
+def process_xyz_md17(datafile):
     """
     Read xyz file and return a molecular dict with number of atoms, energy, forces, coordinates and atom-type for the MD-17 dataset.
 

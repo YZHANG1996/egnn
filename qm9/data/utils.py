@@ -10,7 +10,7 @@ from qm9.data.prepare import prepare_dataset
 
 
 def initialize_datasets(args, datadir, dataset, subset=None, splits=None,
-                        force_download=False, subtract_thermo=False):
+                        force_download=False, subtract_thermo=False, noopt_geom=False):
     """
     Initialize datasets.
 
@@ -55,7 +55,7 @@ def initialize_datasets(args, datadir, dataset, subset=None, splits=None,
 
     # Download and process dataset. Returns datafiles.
     datafiles = prepare_dataset(
-        datadir, dataset, subset, splits, force_download=force_download, noopt_geom=args.noopt_geom)
+        datadir, dataset, subset, splits, force_download=force_download, noopt_geom=noopt_geom)
 
     # Load downloaded/processed datasets
     datasets = {}
