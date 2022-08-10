@@ -150,7 +150,7 @@ if __name__ == "__main__":
     print ("start")
     res = {'epochs': [], 'losess': [], 'best_val': 1e10, 'best_test': 1e10, 'best_epoch': 0}
 
-    if args.inferece:
+    if args.inference:
 
         val_loss = train(epoch, dataloaders['valid'], partition='valid')
         test_loss = train(epoch, dataloaders['test'], partition='test')
