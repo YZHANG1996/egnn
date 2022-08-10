@@ -1,3 +1,4 @@
+from multiprocessing import Value
 from xmlrpc.client import Boolean
 from qm9 import dataset
 from qm9.models import EGNN
@@ -52,6 +53,8 @@ parser.add_argument('--weight_decay', type=float, default=1e-16, metavar='N',
                     help='weight decay')
 parser.add_argument('--load', action=BoolArg, default=False,
                     help='Load from previous checkpoint. (default: False)')
+parser.add_argument('--inference', action=BoolArg, default=False,
+                    help='Load from best model and do inference. (default: False)')
 
 
 args = parser.parse_args()
@@ -76,16 +79,20 @@ optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_
 lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
 loss_l1 = nn.L1Loss()
 
-# Load model training parameters from checkpoint
+# Load model training parameters from checkpoint or best model
 if args.load:
     checkpoint = torch.load(args.outf + "/" + args.exp_name + "/model_checkpoint")
+elif args.inference:
+    checkpoint = torch.load(args.outf + "/" + args.exp_name + "/best_model")
+else:
+    epoch = 0
+if args.load or args.inference:
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     train_loss, val_loss, test_loss = checkpoint['train_loss'], checkpoint['val_loss'], checkpoint['test_loss']
     lr_scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
     epoch = checkpoint['epoch'] + 1
-else:
-    epoch = 0
+
 
 def train(epoch, loader, partition='train'):
     lr_scheduler.step()
@@ -135,60 +142,70 @@ def train(epoch, loader, partition='train'):
 
 
 if __name__ == "__main__":
+
     print ("start")
     res = {'epochs': [], 'losess': [], 'best_val': 1e10, 'best_test': 1e10, 'best_epoch': 0}
-    tb = SummaryWriter(log_dir = args.outf + "/" + args.exp_name)
 
-    while epoch < args.epochs:
+    if args.inferece:
 
-        train_loss = train(epoch, dataloaders['train'], partition='train')
+        val_loss = train(epoch, dataloaders['valid'], partition='valid')
+        test_loss = train(epoch, dataloaders['test'], partition='test')
+        print ("val_loss", val_loss)
+        print ("test_loss", test_loss)
+        
+    else:
+        tb = SummaryWriter(log_dir = args.outf + "/" + args.exp_name)
 
-        if epoch % args.test_interval == 0:
-            val_loss = train(epoch, dataloaders['valid'], partition='valid')
-            test_loss = train(epoch, dataloaders['test'], partition='test')
-            res['epochs'].append(epoch)
-            res['losess'].append(test_loss)
+        while epoch < args.epochs:
 
-            # For visualization in tensorboard
-            tb.add_scalar("Learning_Rate", lr_scheduler.get_last_lr()[-1], epoch)
-            tb.add_scalar("MAE_Loss/Train", float(train_loss), epoch)
-            tb.add_scalar("MAE_Loss/Validation", float(val_loss), epoch)
-            tb.add_scalar("MAE_Loss/Test", float(test_loss), epoch)
+            train_loss = train(epoch, dataloaders['train'], partition='train')
 
-            # Save the model checkpoints
-            torch.save({
-                        'epoch': epoch,
-                        'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'train_loss': train_loss,
-                        'val_loss': val_loss,
-                        'test_loss': test_loss,
-                        'scheduler_state_dict': lr_scheduler.state_dict()
-                        }, args.outf + "/" + args.exp_name + "/model_checkpoint") 
+            if epoch % args.test_interval == 0:
+                val_loss = train(epoch, dataloaders['valid'], partition='valid')
+                test_loss = train(epoch, dataloaders['test'], partition='test')
+                res['epochs'].append(epoch)
+                res['losess'].append(test_loss)
 
-            if val_loss < res['best_val']:
-                res['best_val'] = val_loss
-                res['best_test'] = test_loss
-                res['best_epoch'] = epoch
+                # For visualization in tensorboard
+                tb.add_scalar("Learning_Rate", lr_scheduler.get_last_lr()[-1], epoch)
+                tb.add_scalar("MAE_Loss/Train", float(train_loss), epoch)
+                tb.add_scalar("MAE_Loss/Validation", float(val_loss), epoch)
+                tb.add_scalar("MAE_Loss/Test", float(test_loss), epoch)
 
-                # Save the best model parameters
+                # Save the model checkpoints
                 torch.save({
                             'epoch': epoch,
                             'model_state_dict': model.state_dict(),
                             'optimizer_state_dict': optimizer.state_dict(),
-                            'best_val': val_loss,
-                            'best_test': test_loss,
+                            'train_loss': train_loss,
+                            'val_loss': val_loss,
+                            'test_loss': test_loss,
                             'scheduler_state_dict': lr_scheduler.state_dict()
-                            }, args.outf + "/" + args.exp_name + "/best_model")                
+                            }, args.outf + "/" + args.exp_name + "/model_checkpoint") 
 
-            print("Val loss: %.4f \t test loss: %.4f \t epoch %d" % (val_loss, test_loss, epoch))
-            print("Best: val loss: %.4f \t test loss: %.4f \t epoch %d" % (res['best_val'], res['best_test'], res['best_epoch']))
+                if val_loss < res['best_val']:
+                    res['best_val'] = val_loss
+                    res['best_test'] = test_loss
+                    res['best_epoch'] = epoch
 
-        epoch += 1
+                    # Save the best model parameters
+                    torch.save({
+                                'epoch': epoch,
+                                'model_state_dict': model.state_dict(),
+                                'optimizer_state_dict': optimizer.state_dict(),
+                                'best_val': val_loss,
+                                'best_test': test_loss,
+                                'scheduler_state_dict': lr_scheduler.state_dict()
+                                }, args.outf + "/" + args.exp_name + "/best_model")                
 
-        json_object = json.dumps(res, indent=4)
-        with open(args.outf + "/" + args.exp_name + "/losess.json", "w") as outfile:
-            outfile.write(json_object)
+                print("Val loss: %.4f \t test loss: %.4f \t epoch %d" % (val_loss, test_loss, epoch))
+                print("Best: val loss: %.4f \t test loss: %.4f \t epoch %d" % (res['best_val'], res['best_test'], res['best_epoch']))
+
+            epoch += 1
+
+            json_object = json.dumps(res, indent=4)
+            with open(args.outf + "/" + args.exp_name + "/losess.json", "w") as outfile:
+                outfile.write(json_object)
     
     print ("Finish")
 
