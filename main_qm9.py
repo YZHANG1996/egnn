@@ -82,16 +82,20 @@ loss_l1 = nn.L1Loss()
 # Load model training parameters from checkpoint or best model
 if args.load:
     checkpoint = torch.load(args.outf + "/" + args.exp_name + "/model_checkpoint")
-elif args.inference:
-    checkpoint = torch.load(args.outf + "/" + args.exp_name + "/best_model")
-else:
-    epoch = 0
-if args.load or args.inference:
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     train_loss, val_loss, test_loss = checkpoint['train_loss'], checkpoint['val_loss'], checkpoint['test_loss']
     lr_scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
     epoch = checkpoint['epoch'] + 1
+elif args.inference:
+    best_model = torch.load(args.outf + "/" + args.exp_name + "/best_model")
+    model.load_state_dict(best_model['model_state_dict'])
+    optimizer.load_state_dict(best_model['optimizer_state_dict'])
+    val_loss, test_loss = best_model['best_val'], best_model['best_test']
+    lr_scheduler.load_state_dict(best_model['scheduler_state_dict'])
+    epoch = best_model['epoch'] + 1
+else:
+    epoch = 0
 
 
 def train(epoch, loader, partition='train'):
@@ -152,7 +156,7 @@ if __name__ == "__main__":
         test_loss = train(epoch, dataloaders['test'], partition='test')
         print ("val_loss", val_loss)
         print ("test_loss", test_loss)
-        
+
     else:
         tb = SummaryWriter(log_dir = args.outf + "/" + args.exp_name)
 
