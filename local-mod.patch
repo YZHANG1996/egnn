@@ -1,0 +1,19 @@
+diff --git a/exec.sh b/exec.sh
+index 6490bfa..8131fd0 100644
+--- a/exec.sh
++++ b/exec.sh
+@@ -1,10 +1,11 @@
+ #!/bin/sh
+ 
+ APPDIR=`dirname $0`
++cd ./repo
+ pip install -r requirements.txt
+ pip install .
+ cd docs/tutorials
+-python train_painn_lumo.py
++python train_painn_homo.py
+ 
+ # python -u $APPDIR/main_qm9.py --num_workers 4 $@
+-# return $?
+\ No newline at end of file
++# return $?
