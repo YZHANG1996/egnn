@@ -1,0 +1,13 @@
+diff --git a/exec.sh b/exec.sh
+index 9e9bdd5..6828bc8 100644
+--- a/exec.sh
++++ b/exec.sh
+@@ -2,7 +2,7 @@
+ 
+ APPDIR=`dirname $0`
+ cd ./repo
+-pip list
++pip install sympy
+ pip install numpy==1.19.2
+ python train.py
+ 
