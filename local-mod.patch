@@ -1,0 +1,16 @@
+diff --git a/exec.sh b/exec.sh
+index 3011293..c128eec 100644
+--- a/exec.sh
++++ b/exec.sh
+@@ -3,8 +3,9 @@
+ APPDIR=`dirname $0`
+ cd ./repo
+ wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
+-bash Mambaforge-Linux-x86_64.sh -y
+-conda init
++bash Mambaforge-Linux-x86_64.sh <<EOF
++Yes
++EOF
+ source ~/.bashrc
+ mamba env create -f environment.yml
+ mamba activate torchmd-net
