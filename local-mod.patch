@@ -1,0 +1,73 @@
+diff --git a/docs/tutorials/train_painn_alpha.py b/docs/tutorials/train_painn_alpha.py
+index c64294d..974ecd2 100644
+--- a/docs/tutorials/train_painn_alpha.py
++++ b/docs/tutorials/train_painn_alpha.py
+@@ -98,7 +98,7 @@ trainer = pl.Trainer(
+     callbacks=callbacks,
+     logger=logger,
+     default_root_dir=qm9tut,
+-    max_epochs=10000, # for testing, we restrict the number of epochs
++    max_epochs=100000, # for testing, we restrict the number of epochs
+     accelerator='gpu',
+     devices=1
+ )
+diff --git a/docs/tutorials/train_painn_qm9.py b/docs/tutorials/train_painn_qm9.py
+index 61eb79a..153c392 100644
+--- a/docs/tutorials/train_painn_qm9.py
++++ b/docs/tutorials/train_painn_qm9.py
+@@ -73,7 +73,7 @@ parser.add_argument('--lr', type=float, default=5e-4, metavar='N',
+                     help='learning rate')
+ parser.add_argument('--num_workers', type=int, default=16, metavar='N',
+                     help='number of workers for the dataloader')
+-parser.add_argument('--outf', type=str, default='/mnt/nfs-mnj-hot-01/tmp/i22_yzhang/painn/', metavar='N',
++parser.add_argument('--outf', type=str, default='/mnt/nfs-mnj-hot-01/tmp/i22_yzhang/painn_new/', metavar='N',
+                     help='folder to output results')
+ parser.add_argument('--agg_mode', type=str, default='sum', metavar='N',
+                     help='aggregation of atomic predictions')
+@@ -84,7 +84,7 @@ args = parser.parse_args()
+ 
+ property = getattr(QM9, args.property)
+ 
+-qm9tut = args.outf + property
++qm9tut = args.outf + property + "-" + str(args.lr) + "-" + args.agg_mode
+ if not os.path.exists(qm9tut):
+     os.makedirs(qm9tut)
+ inference_model = property + 'best_inference_model'
+@@ -123,16 +123,16 @@ painn = spk.representation.PaiNN(
+     cutoff_fn=spk.nn.CosineCutoff(cutoff)
+ )
+ 
+-pred_homo = spk.atomistic.Atomwise(n_in=n_atom_basis, output_key=property, aggregation_mode=args.agg_mode)
++pred_prop = spk.atomistic.Atomwise(n_in=n_atom_basis, output_key=property, aggregation_mode=args.agg_mode)
+ 
+ nnpot = spk.model.NeuralNetworkPotential(
+     representation=painn,
+     input_modules=[pairwise_distance],
+-    output_modules=[pred_homo],
++    output_modules=[pred_prop],
+     postprocessors=[trn.CastTo64(), trn.AddOffsets(property, add_mean=True, add_atomrefs=False)]
+ )
+ 
+-output_homo = spk.task.ModelOutput(
++output_prop = spk.task.ModelOutput(
+     name=property,
+     loss_fn=torch.nn.MSELoss(),
+     loss_weight=1.,
+@@ -143,7 +143,7 @@ output_homo = spk.task.ModelOutput(
+ 
+ task = spk.task.AtomisticTask(
+     model=nnpot,
+-    outputs=[output_homo],
++    outputs=[output_prop],
+     optimizer_cls=torch.optim.AdamW,
+     optimizer_args={"lr": args.lr}
+ )
+@@ -163,6 +163,6 @@ trainer = pl.Trainer(
+     callbacks=callbacks,
+     logger=logger,
+     default_root_dir=qm9tut,
+-    max_epochs=10000, # for testing, we restrict the number of epochs
++    max_epochs=100000, # for testing, we restrict the number of epochs
+ )
+ trainer.fit(task, datamodule=qm9data)
+\ No newline at end of file
