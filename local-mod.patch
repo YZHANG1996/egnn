@@ -1,0 +1,40 @@
+diff --git a/docs/tutorials/train_painn_qm9.py b/docs/tutorials/train_painn_qm9.py
+index 209a9ab..58db136 100644
+--- a/docs/tutorials/train_painn_qm9.py
++++ b/docs/tutorials/train_painn_qm9.py
+@@ -104,7 +104,7 @@ qm9data = QM9(
+         trn.RemoveOffsets(property, remove_mean=True, remove_atomrefs=args.remove_atomrefs),
+         trn.CastTo32()
+     ],
+-    # property_units = {property: 'eV'},
++    property_units = {property: 'eV'},
+     # property_units= None if property == "r2" or "mu" or "alpha" or "cv" else {property: 'eV'},
+     num_workers=args.num_workers,
+     split_file=os.path.join(qm9tut, "split.npz"),
+diff --git a/src/schnetpack/atomistic/atomwise.py b/src/schnetpack/atomistic/atomwise.py
+index 197dec7..e8c5812 100644
+--- a/src/schnetpack/atomistic/atomwise.py
++++ b/src/schnetpack/atomistic/atomwise.py
+@@ -25,7 +25,7 @@ class Atomwise(nn.Module):
+         n_hidden: Optional[Union[int, Sequence[int]]] = None,
+         n_layers: int = 2,
+         activation: Callable = F.silu,
+-        aggregation_mode: str = "sum",
++        aggregation_mode: str = "avg",
+         output_key: str = "y",
+         per_atom_output_key: Optional[str] = None,
+     ):
+@@ -75,8 +75,13 @@ class Atomwise(nn.Module):
+             y = snn.scatter_add(y, idx_m, dim_size=maxm)
+             y = torch.squeeze(y, -1)
+ 
++            print ("aggregation mode check", self.aggregation_mode)
++
+             if self.aggregation_mode == "avg":
++
++                print ("y before avg aggregation", y)
+                 y = y / inputs[properties.n_atoms]
++                print ("y after avg aggregation", y)
+ 
+         inputs[self.output_key] = y
+         return inputs
