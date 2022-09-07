@@ -1,0 +1,58 @@
+diff --git a/examples/ET-QM9.yaml b/examples/ET-QM9.yaml
+index 1073276..e29d403 100644
+--- a/examples/ET-QM9.yaml
++++ b/examples/ET-QM9.yaml
+@@ -1,5 +1,5 @@
+ activation: silu
+-aggr: add
++aggr: mean
+ atom_filter: -1
+ attn_activation: silu
+ batch_size: 128
+@@ -8,7 +8,7 @@ cutoff_lower: 0.0
+ cutoff_upper: 5.0
+ dataset: QM9
+ dataset_arg:
+-  label: homo
++  label: lumo
+ dataset_root: ~/data
+ derivative: false
+ distance_influence: both
+@@ -23,7 +23,7 @@ force_files: null
+ force_weight: 1.0
+ inference_batch_size: 128
+ load_model: null
+-log_dir: logs/
++log_dir: /mnt/nfs-mnj-hot-01/tmp/i22_yzhang/torchmd_training/lumo-mean
+ lr: 0.0004
+ lr_factor: 0.8
+ lr_min: 1.0e-07
+diff --git a/logs/input.yaml b/logs/input.yaml
+index 1073276..e29d403 100644
+--- a/logs/input.yaml
++++ b/logs/input.yaml
+@@ -1,5 +1,5 @@
+ activation: silu
+-aggr: add
++aggr: mean
+ atom_filter: -1
+ attn_activation: silu
+ batch_size: 128
+@@ -8,7 +8,7 @@ cutoff_lower: 0.0
+ cutoff_upper: 5.0
+ dataset: QM9
+ dataset_arg:
+-  label: homo
++  label: lumo
+ dataset_root: ~/data
+ derivative: false
+ distance_influence: both
+@@ -23,7 +23,7 @@ force_files: null
+ force_weight: 1.0
+ inference_batch_size: 128
+ load_model: null
+-log_dir: logs/
++log_dir: /mnt/nfs-mnj-hot-01/tmp/i22_yzhang/torchmd_training/lumo-mean
+ lr: 0.0004
+ lr_factor: 0.8
+ lr_min: 1.0e-07
