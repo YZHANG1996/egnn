@@ -80,7 +80,7 @@ class EGNN(nn.Module):
         h = self.node_dec(h)
         h = h * node_mask
         h = h.view(-1, n_nodes, self.hidden_nf)
-        h = torch.mean(h, dim=1)
+        h = torch.sum(h, dim=1)
         pred = self.graph_dec(h)
         return pred.squeeze(1)
 
