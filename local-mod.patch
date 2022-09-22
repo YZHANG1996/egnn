@@ -1,0 +1,29 @@
+diff --git a/exec.sh b/exec.sh
+index 27a111e..3871cb4 100644
+--- a/exec.sh
++++ b/exec.sh
+@@ -4,7 +4,7 @@ APPDIR=`dirname $0`
+ cd ./repo
+ pip install sympy
+ pip install tensorflow-addons==0.17.1
+-pip install numpy==1.19.2
++# pip install numpy==1.19.2
+ python train.py $@
+ 
+ return $?
+diff --git a/train.py b/train.py
+index 0f87d6e..91a2c91 100644
+--- a/train.py
++++ b/train.py
+@@ -105,9 +105,9 @@ if targets[0] in ['mu', 'homo', 'lumo','zpve']:
+     output_init = 'zeros'
+ else:
+     output_init = 'GlorotOrthogonal'
+-if args.agg_mode == "sum":
++if args.agg_mode == "sum" or args.agg_mode == "add":
+     extensive = True
+-elif args.agg_mode == "avg":
++elif args.agg_mode == "avg" or args.agg_mode == "mean":
+     extensive = False
+ elif args.agg_mode == "max":
+     extensive = "max"
