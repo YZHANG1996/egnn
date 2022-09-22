@@ -43,7 +43,7 @@ class E_GCL_mask(E_GCL):
 
 
 class EGNN(nn.Module):
-    def __init__(self, in_node_nf, in_edge_nf, hidden_nf, device='cpu', act_fn=nn.SiLU(), n_layers=4, coords_weight=1.0, attention=False, node_attr=1):
+    def __init__(self, in_node_nf, in_edge_nf, hidden_nf, device='cpu', act_fn=nn.SiLU(), n_layers=4, coords_weight=1.0, attention=False, node_attr=1, agg_mode):
         super(EGNN, self).__init__()
         self.hidden_nf = hidden_nf
         self.device = device
@@ -68,7 +68,7 @@ class EGNN(nn.Module):
                                        nn.Linear(self.hidden_nf, 1))
         self.to(self.device)
 
-    def forward(self, h0, x, edges, edge_attr, node_mask, edge_mask, n_nodes):
+    def forward(self, h0, x, edges, edge_attr, node_mask, edge_mask, n_nodes, agg_mode):
         h = self.embedding(h0)
         for i in range(0, self.n_layers):
             if self.node_attr:
@@ -80,9 +80,12 @@ class EGNN(nn.Module):
         h = self.node_dec(h)
         h = h * node_mask
         h = h.view(-1, n_nodes, self.hidden_nf)
-        h = torch.mean(h, dim=1)
+        if agg_mode == "sum" or "add":
+            h = torch.sum(h, dim=1)
+        elif agg_mode == "mean" or "avg":
+            h = torch.mean(h, dim=1)
+        elif agg_mode == "max":
+            h = torch.max(h, dim=1)
         pred = self.graph_dec(h)
         return pred.squeeze(1)
-
-
 

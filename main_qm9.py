@@ -55,7 +55,8 @@ parser.add_argument('--load', action=BoolArg, default=False,
                     help='Load from previous checkpoint. (default: False)')
 parser.add_argument('--inference', action=BoolArg, default=False,
                     help='Load from best model and do inference. (default: False)')
-
+parser.add_argument('--agg_mode', type=str, default='sum', metavar='N',
+                    help='aggregation of atomic predictions, can be avg, sum and max')
 
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -71,7 +72,7 @@ dataloaders, charge_scale = dataset.retrieve_dataloaders(args.batch_size, args.n
 meann, mad = qm9_utils.compute_mean_mad(dataloaders, args.property)
 
 model = EGNN(in_node_nf=15, in_edge_nf=0, hidden_nf=args.nf, device=device, n_layers=args.n_layers, coords_weight=1.0,
-             attention=args.attention, node_attr=args.node_attr)
+             attention=args.attention, node_attr=args.node_attr, agg_mode=args.agg_mode)
 
 print(model)
 
@@ -123,7 +124,7 @@ def train(epoch, loader, partition='train'):
         label = data[args.property].to(device, dtype)
 
         pred = model(h0=nodes, x=atom_positions, edges=edges, edge_attr=None, node_mask=atom_mask, edge_mask=edge_mask,
-                     n_nodes=n_nodes)
+                     n_nodes=n_nodes, agg_mode=args.agg_mode)
 
         if partition == 'train':
             loss = loss_l1(pred, (label - meann) / mad)
