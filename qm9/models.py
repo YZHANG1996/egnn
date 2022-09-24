@@ -88,7 +88,7 @@ class EGNN(nn.Module):
             h = torch.mean(h, dim=1)
         elif agg_mode == "max":
             # print ("max pooling is used, agg_mode value is ", agg_mode)
-            h = torch.max(h, dim=1)
+            h = torch.max(h, dim=1)[0]
         pred = self.graph_dec(h)
         return pred.squeeze(1)
 
