@@ -80,15 +80,16 @@ class EGNN(nn.Module):
         h = self.node_dec(h)
         h = h * node_mask
         h = h.view(-1, n_nodes, self.hidden_nf)
-        if agg_mode == "sum" or "add":
-            # print ("sum pooling is used, agg_mode value is ", agg_mode)
-            h = torch.sum(h, dim=1)
-        elif agg_mode == "mean" or "avg":
-            # print ("avg pooling is used, agg_mode value is ", agg_mode)
-            h = torch.mean(h, dim=1)
-        elif agg_mode == "max":
-            # print ("max pooling is used, agg_mode value is ", agg_mode)
-            h = torch.max(h, dim=1)[0]
+        # if agg_mode == "sum" or "add":
+        #     # print ("sum pooling is used, agg_mode value is ", agg_mode)
+        #     h = torch.sum(h, dim=1)
+        # elif agg_mode == "mean" or "avg":
+        #     # print ("avg pooling is used, agg_mode value is ", agg_mode)
+        #     h = torch.mean(h, dim=1)
+        # elif agg_mode == "max":
+        #     # print ("max pooling is used, agg_mode value is ", agg_mode)
+        #     h = torch.max(h, dim=1)[0]
+        h = torch.max(h, dim=1)[0]
         pred = self.graph_dec(h)
         return pred.squeeze(1)
 
